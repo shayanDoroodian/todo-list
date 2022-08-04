@@ -7,11 +7,13 @@ import {
 import { auth } from '../fireBase.js';
 import { useNavigate } from 'react-router-dom';
 import {
+	Alert,
 	Box,
 	Button,
 	IconButton,
 	InputAdornment,
 	OutlinedInput,
+	Snackbar,
 	Stack,
 	TextField,
 	Typography,
@@ -19,18 +21,29 @@ import {
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Alertcomp from './alert';
+
 const Welcome = () => {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [errorText, setErrorText] = useState('');
 	const [register, setRegister] = useState(false);
 	const [showPassword, setShowpassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmpassword] = useState(false);
+	const [open, setOpen] = useState(false);
 	const [registerInfo, setRegisterInfo] = useState({
 		email: '',
 		password: '',
 		confirmPassword: '',
 	});
 
+	const handleClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+
+		setOpen(false);
+	};
 	const nav = useNavigate();
 	useEffect(() => {
 		auth.onAuthStateChanged((user) => {
@@ -39,7 +52,9 @@ const Welcome = () => {
 			}
 		});
 	}, []);
+
 	/////////////////////////////////////////////////////////////LOGIN/////////////////////////////////////////////////////////////////
+
 	const emailHandler = (e) => {
 		setEmail(e.target.value);
 	};
@@ -47,14 +62,26 @@ const Welcome = () => {
 		setPassword(e.target.value);
 	};
 	const login = () => {
+		if (!email) {
+			setErrorText('please enter your email');
+			setOpen(true);
+			return;
+		}
+		if (!password) {
+			setErrorText('please enter your password');
+			setOpen(true);
+			return;
+		}
 		signInWithEmailAndPassword(auth, email, password)
 			.then(() => {
 				nav('/home');
 			})
 			.catch((err) => {
-				alert(err.message);
+				setErrorText('Email or Password is wrong');
+				setOpen(true);
 			});
 	};
+
 	/////////////////////////////////////////////////////////////REGISTER/////////////////////////////////////////////////////////////////
 
 	const registerHandler = () => {
@@ -67,21 +94,25 @@ const Welcome = () => {
 				.then(() => {
 					nav('/home');
 				})
-				.catch((err) => {
-					alert(err.message);
+				.catch((error) => {
+					setErrorText(error.message);
+					setOpen(true);
 				});
 		} else {
-			alert('confirm password are not the same');
+			setErrorText('confirm password are not the same');
+			setOpen(true);
 		}
 	};
+
+	/////////////////////////////////////////////////////////////ALERT/////////////////////////////////////////////////////////////////
 
 	return (
 		<Stack
 			alignItems='center'
 			justifyContent='center'
 			display='flex'
-			width='100vw'
-			height='100vh'>
+			width='100%'
+			height='calc(100vh - 60px)'>
 			{register ? (
 				<>
 					<Typography variant='h3' textAlign='center' mb={10}>
@@ -247,7 +278,9 @@ const Welcome = () => {
 									<InputAdornment position='end'>
 										<IconButton
 											aria-label='toggle password visibility'
-											onClick={() => setShowpassword(!showPassword)}
+											onClick={() => {
+												setShowpassword(!showPassword);
+											}}
 											edge='end'>
 											{showPassword ? <VisibilityOff /> : <Visibility />}
 										</IconButton>
@@ -270,15 +303,22 @@ const Welcome = () => {
 								setRegister(true);
 							}}
 							sx={{
-								marginLeft: '30px',
 								color: 'rgb(100,100,100)',
 								cursor: 'pointer',
 							}}>
-							Don't have an account? let's create!
+							Don't have an account? Let's create!
 						</Typography>
 					</Box>
 				</>
 			)}
+
+			{open ? (
+				<Alertcomp
+					text={errorText}
+					severity='error'
+					handleClose={handleClose}
+				/>
+			) : null}
 		</Stack>
 	);
 };

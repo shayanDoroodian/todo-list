@@ -25,6 +25,10 @@ import HourglassFullIcon from '@mui/icons-material/HourglassFull';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
+import Alertcomp from './alert';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import DoneIcon from '@mui/icons-material/Done';
 const Home = () => {
 	const nav = useNavigate();
 	const [todo, setTodo] = useState('');
@@ -32,6 +36,17 @@ const Home = () => {
 	const [editId, setEditId] = useState('');
 	const [todoList, setTodoList] = useState([]);
 
+	const [open, setOpen] = useState(false);
+	const [errorText, setErrorText] = useState('');
+	const [loading, setLoading] = useState(false);
+
+	const handleClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+
+		setOpen(false);
+	};
 	useEffect(() => {
 		auth.onAuthStateChanged((user) => {
 			if (user) {
@@ -42,6 +57,8 @@ const Home = () => {
 						Object.values(data).map((todo) => {
 							setTodoList((oldArray) => [...oldArray, todo]);
 						});
+					} else {
+						setLoading(true);
 					}
 				});
 			} else if (!user) {
@@ -70,7 +87,8 @@ const Home = () => {
 
 			setTodo('');
 		} else {
-			alert('write something');
+			setErrorText('please write something . . .');
+			setOpen(true);
 		}
 	};
 
@@ -113,6 +131,7 @@ const Home = () => {
 			width='70%'
 			sx={{
 				width: { xs: '90%' },
+				minHeight: 'calc(100vh - 150px)',
 			}}
 			m='50px auto'>
 			<Box
@@ -121,6 +140,7 @@ const Home = () => {
 					alignItems: { xs: 'center', sm: 'flex-end' },
 					justifyContent: 'center',
 					margin: '0 auto',
+					// marginTop: '100px',
 					width: '100%',
 					flexDirection: { xs: 'column', sm: 'row' },
 				}}>
@@ -158,10 +178,11 @@ const Home = () => {
 				sx={{
 					display: 'flex',
 					alignItems: 'center',
-					justifyContent: 'center',
+					justifyContent: 'flex-start',
 					flexDirection: 'column',
 					margin: '0 auto',
 					width: '100%',
+					minHeight: '60vh',
 					marginTop: '50px',
 					mt: { xs: 4, sm: '50px' },
 				}}>
@@ -174,112 +195,139 @@ const Home = () => {
 
 				<List
 					sx={{
-						width: { xs: '100vw', sm: '70%' },
+						width: { xs: '100%', sm: '70%' },
 					}}>
-					{todoList.map((item) => (
-						<ListItem
-							key={item.uid}
-							secondaryAction={
-								<IconButton
-									edge='end'
-									aria-label='delete'
-									onClick={() => handleDelete(item.uidd)}>
-									<DeleteIcon color='error' />
-								</IconButton>
-							}>
-							<ListItemAvatar>
-								<Avatar>
-									{item.done ? (
-										<DoneAllIcon
-											color='success'
-											sx={{ color: 'rgb(24, 243, 0)' }}
-										/>
-									) : (
-										<HourglassFullIcon sx={{ color: '#2980b9' }} />
-									)}
-								</Avatar>
-							</ListItemAvatar>
-							<ListItemText
-								sx={{
-									color: 'rgb(50,50,50)',
-									wordWrap: 'break-word',
-								}}
-								primary={item.todo}
-								secondary={false ? 'Secondary text' : null}
-							/>
-
-							{edit && editId === item.uidd ? (
-								<Button
-									variant='contained'
-									onClick={() => {
-										handleUpdate(item.uidd);
-										setTodo('');
-										setEdit(false);
-									}}
+					{todoList.length ? (
+						todoList.map((item) => (
+							<ListItem
+								key={item.uid}
+								secondaryAction={
+									item.done ? (
+										<IconButton
+											edge='end'
+											aria-label='delete'
+											onClick={() => handleDelete(item.uidd)}>
+											<DeleteIcon color='error' />
+										</IconButton>
+									) : null
+								}>
+								<ListItemAvatar>
+									<Avatar>
+										{item.done ? (
+											<DoneAllIcon
+												color='success'
+												sx={{ color: 'rgb(24, 243, 0)' }}
+											/>
+										) : (
+											<HourglassFullIcon sx={{ color: '#2980b9' }} />
+										)}
+									</Avatar>
+								</ListItemAvatar>
+								<ListItemText
 									sx={{
-										color: 'rgb(244, 244, 244)',
-										borderColor: 'rgb(244, 244, 244)',
-									}}>
-									Ok
-								</Button>
-							) : (
-								<>
-									{!item.done ? (
-										<EditIcon
-											onClick={() => {
-												setEdit(true);
-												setTodo(item.todo);
-												setEditId(item.uidd);
-											}}
-											sx={{
-												display: { xs: 'block', sm: 'none' },
-											}}
-										/>
-									) : null}
+										color: 'rgb(50,50,50)',
+										wordWrap: 'break-word',
+									}}
+									primary={item.todo}
+									secondary={false ? 'Secondary text' : null}
+								/>
 
+								{edit && editId === item.uidd ? (
+									<Button
+										variant='contained'
+										onClick={() => {
+											handleUpdate(item.uidd);
+											setTodo('');
+											setEdit(false);
+										}}
+										sx={{
+											marginRight: '10px',
+
+											color: 'rgb(244, 244, 244)',
+											borderColor: 'rgb(244, 244, 244)',
+										}}>
+										Ok
+									</Button>
+								) : (
+									<>
+										{!item.done ? (
+											<>
+												<EditIcon
+													onClick={() => {
+														setEdit(true);
+														setTodo(item.todo);
+														setEditId(item.uidd);
+													}}
+													sx={{
+														marginRight: '10px',
+														display: { xs: 'block', sm: 'none' },
+													}}
+												/>
+
+												<Button
+													variant='outlined'
+													disabled={item.done ? true : false}
+													onClick={() => {
+														setEdit(true);
+														setTodo(item.todo);
+														setEditId(item.uidd);
+													}}
+													sx={{
+														color: 'rgb(244, 244, 244)',
+														borderColor: 'rgb(244, 244, 244)',
+														display: { xs: 'none', sm: 'block' },
+													}}>
+													update
+												</Button>
+											</>
+										) : null}
+									</>
+								)}
+								<>
+									<DoneOutlineIcon
+										onClick={() => {
+											handleDone(item);
+										}}
+										sx={{
+											display: { xs: 'block', sm: 'none' },
+										}}
+									/>
 									<Button
 										variant='outlined'
 										disabled={item.done ? true : false}
 										onClick={() => {
-											setEdit(true);
-											setTodo(item.todo);
-											setEditId(item.uidd);
+											handleDone(item);
 										}}
 										sx={{
 											color: 'rgb(244, 244, 244)',
 											borderColor: 'rgb(244, 244, 244)',
+											marginLeft: '10px',
 											display: { xs: 'none', sm: 'block' },
 										}}>
-										update
+										{item.done ? 'finished' : 'finish'}
 									</Button>
 								</>
+							</ListItem>
+						))
+					) : (
+						<Box
+							sx={{
+								display: 'flex',
+								justifyContent: 'center',
+								margin: '50px 0',
+								flexDirection: 'column',
+								alignItems: 'center',
+							}}>
+							{loading ? (
+								<>
+									<h3>Nothing yet</h3>
+									you can add task easily by typing in input field
+								</>
+							) : (
+								<CircularProgress></CircularProgress>
 							)}
-							<>
-								<DoneOutlineIcon
-									onClick={() => {
-										handleDone(item);
-									}}
-									sx={{
-										display: { xs: 'block', sm: 'none' },
-									}}
-								/>
-								<Button
-									variant='outlined'
-									disabled={item.done ? true : false}
-									onClick={() => {
-										handleDone(item);
-									}}
-									sx={{
-										color: 'rgb(244, 244, 244)',
-										borderColor: 'rgb(244, 244, 244)',
-										marginLeft: '10px',
-										display: { xs: 'none', sm: 'block' },
-									}}>
-									{item.done ? 'finished' : 'finish'}
-								</Button>
-							</>
-						</ListItem>
-					))}
+						</Box>
+					)}
 				</List>
 			</Box>
 
@@ -291,6 +339,13 @@ const Home = () => {
 				}}>
 				Logout
 			</Button>
+			{open ? (
+				<Alertcomp
+					text={errorText}
+					severity='error'
+					handleClose={handleClose}
+				/>
+			) : null}
 		</Stack>
 	);
 };

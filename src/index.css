@@ -28,6 +28,10 @@ code {
 	font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
 		monospace;
 }
+a {
+	text-decoration: none;
+	/* color: rgba(255, 255, 255, 0.882); */
+}
 .css-2s90m6-MuiAvatar-root,
 .css-2s90m6-MuiAvatar-root,
 .css-154ogbs {
@@ -37,4 +41,30 @@ code {
 }
 .css-1e9lk82-MuiListItemAvatar-root {
 	min-width: 20px !important;
+}
+#created {
+	/* position: fixed; */
+	/* left: 50%; */
+	/* transform: translateX(-50%); */
+	/* bottom: 0; */
+	/* right: 20px; */
+	/* height: 100px; */
+	/* border: 1px solid #000; */
+	background-color: #ffffff;
+	text-align: center;
+	padding: 15px 20px;
+	margin: 0;
+	border-top-left-radius: 35px;
+	font-size: 12px;
+}
+
+.css-1er831-MuiSvgIcon-root {
+	/* margin-right: 10px !important; */
+}
+.mainContainer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-direction: column;
+	min-height: 100vh;
 }
